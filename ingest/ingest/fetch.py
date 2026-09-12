@@ -47,7 +47,7 @@ def checkout(
     sparse_paths: list[str],
 ) -> Path:
     ref = resolve_ref(repo, ref_template, version)
-    key = hashlib.sha1(f"{repo}@{ref}".encode(), usedforsecurity=False).hexdigest()[:12]
+    key = hashlib.sha256(f"{repo}@{ref}".encode()).hexdigest()[:12]
     dest = work_dir / "repos" / f"{repo.replace('/', '__')}@{key}"
     url = f"https://github.com/{repo}.git"
     if not (dest / ".git").exists():
