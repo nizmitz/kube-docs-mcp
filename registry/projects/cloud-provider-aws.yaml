@@ -1,0 +1,28 @@
+slug: cloud-provider-aws
+name: AWS Cloud Provider (EKS service annotations)
+category: cloud
+homepage: https://cloud-provider-aws.sigs.k8s.io
+license: { code: Apache-2.0, docs: Apache-2.0 }
+attribution: "cloud-provider-aws documentation © The Kubernetes Authors, Apache 2.0."
+source:
+  repo: kubernetes/cloud-provider-aws
+  versions:
+    strategy: fixed
+    tags: [master]
+docs:
+  - format: plain-md
+    root: docs
+    include:
+      - 'service_controller.md'
+      - 'nlb_security_groups.md'
+      - 'tagging_controller.md'
+      - 'credential_provider.md'
+    url:
+      base: 'https://cloud-provider-aws.sigs.k8s.io/'
+      strip_ext: true
+      index_file: index
+annotations:
+  - type: md-table
+    path: docs/service_controller.md
+    url: https://cloud-provider-aws.sigs.k8s.io/service_controller/
+    columns: { key: "Annotation", values: "Valid Values", default: "Default", applies_to: "Valid for", description: "Description" }

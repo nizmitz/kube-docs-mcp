@@ -1,0 +1,14 @@
+slug: kubeschemas
+name: kubeschemas (unpinned latest CRD catalog)
+category: bootstrap
+homepage: https://github.com/imroc/kubeschemas
+license: { code: Apache-2.0, docs: Apache-2.0 }
+attribution: "JSON Schemas from imroc/kubeschemas, Apache 2.0. Upstream CRDs keep their own licenses. Unpinned: reflects the newest CRD version at index build time."
+source:
+  repo: imroc/kubeschemas
+  versions:
+    strategy: fixed
+    tags: [main]
+schemas:
+  - type: jsonschema-dir
+    paths: ['*/*.json']

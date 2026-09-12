@@ -1,0 +1,41 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: widgets.example.io
+spec:
+  group: example.io
+  scope: Namespaced
+  names: { kind: Widget, plural: widgets }
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          description: Widget does things.
+          type: object
+          properties:
+            spec:
+              type: object
+              required: [size]
+              properties:
+                size: { type: integer, description: "Size of widget" }
+                mode: { type: string, enum: [fast, slow] }
+                extra: { type: object, x-kubernetes-preserve-unknown-fields: true }
+                port: { x-kubernetes-int-or-string: true }
+    - name: v1alpha1
+      served: true
+      storage: false
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec: { type: object, properties: { size: { type: string } } }
+    - name: v0
+      served: false
+      storage: false
+      schema: { openAPIV3Schema: { type: object } }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: { name: not-a-crd }

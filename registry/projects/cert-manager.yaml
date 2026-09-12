@@ -1,0 +1,40 @@
+slug: cert-manager
+name: cert-manager
+category: cncf
+homepage: https://cert-manager.io
+license: { code: Apache-2.0, docs: Apache-2.0 }
+attribution: "cert-manager documentation and CRDs © The cert-manager Authors, Apache 2.0."
+source:
+  repo: cert-manager/cert-manager
+  versions:
+    strategy: latest-minors
+    count: 2
+    tag_pattern: '^v(\d+)\.(\d+)\.(\d+)$'
+schemas:
+  - type: crd-yaml
+    paths: ['deploy/crds/*.yaml']
+docs:
+  - repo: cert-manager/website
+    ref: master
+    format: plain-md
+    root: 'content/v{major}.{minor}-docs|content/docs'
+    include:
+      - 'reference/**/*.md'
+      - 'configuration/**/*.md'
+      - 'usage/**/*.md'
+      - 'cli/**/*.md'
+      - 'policy/**/*.md'
+      - 'trust/**/*.md'
+    exclude:
+      - '**/README.md'
+    url:
+      base: 'https://cert-manager.io/docs/'
+      strip_ext: true
+      index_file: README
+annotations:
+  - type: md-headings
+    repo: cert-manager/website
+    ref: master
+    path: 'content/docs/reference/annotations.md'
+    url: https://cert-manager.io/docs/reference/annotations/
+    heading_level: 2

@@ -1,0 +1,66 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/namespaces/{namespace}/pods": {
+      "get": {"x-kubernetes-group-version-kind": {"group": "", "version": "v1", "kind": "Pod"}}
+    },
+    "/api/v1/nodes": {
+      "get": {"x-kubernetes-group-version-kind": {"group": "", "version": "v1", "kind": "Node"}}
+    }
+  },
+  "components": {"schemas": {
+    "io.k8s.api.core.v1.Pod": {
+      "description": "Pod is a collection of containers.",
+      "type": "object",
+      "properties": {
+        "apiVersion": {"type": "string"},
+        "kind": {"type": "string"},
+        "metadata": {"$ref": "#/components/schemas/io.k8s.ObjectMeta"},
+        "spec": {"allOf": [{"$ref": "#/components/schemas/io.k8s.api.core.v1.PodSpec"}], "description": "Spec of the pod"}
+      },
+      "x-kubernetes-group-version-kind": [{"group": "", "kind": "Pod", "version": "v1"}]
+    },
+    "io.k8s.api.core.v1.PodSpec": {
+      "type": "object",
+      "required": ["containers"],
+      "properties": {
+        "containers": {"type": "array", "items": {"$ref": "#/components/schemas/io.k8s.api.core.v1.Container"}, "description": "List of containers"},
+        "nodeSelector": {"type": "object", "additionalProperties": {"type": "string"}},
+        "restartPolicy": {"type": "string", "enum": ["Always", "OnFailure", "Never"]},
+        "dnsPolicy": {"type": "string", "nullable": true}
+      }
+    },
+    "io.k8s.api.core.v1.Container": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string", "description": "Name of the container"},
+        "ports": {"type": "array", "items": {"$ref": "#/components/schemas/io.k8s.api.core.v1.ContainerPort"}},
+        "targetPort": {"x-kubernetes-int-or-string": true, "description": "int or string"}
+      }
+    },
+    "io.k8s.api.core.v1.ContainerPort": {
+      "type": "object",
+      "required": ["containerPort"],
+      "properties": {"containerPort": {"type": "integer", "format": "int32"}, "protocol": {"type": "string"}}
+    },
+    "io.k8s.ObjectMeta": {"type": "object", "properties": {"name": {"type": "string"}}},
+    "io.k8s.api.core.v1.Node": {
+      "type": "object",
+      "properties": {"apiVersion": {"type": "string"}, "kind": {"type": "string"}, "spec": {"$ref": "#/components/schemas/io.k8s.JSONSchemaProps"}},
+      "x-kubernetes-group-version-kind": [{"group": "", "kind": "Node", "version": "v1"}]
+    },
+    "io.k8s.JSONSchemaProps": {
+      "type": "object",
+      "properties": {
+        "not": {"$ref": "#/components/schemas/io.k8s.JSONSchemaProps"},
+        "items": {"type": "array", "items": {"$ref": "#/components/schemas/io.k8s.JSONSchemaProps"}},
+        "title": {"type": "string"}
+      }
+    },
+    "io.k8s.api.core.v1.PodList": {
+      "type": "object",
+      "x-kubernetes-group-version-kind": [{"group": "", "kind": "PodList", "version": "v1"}]
+    }
+  }}
+}

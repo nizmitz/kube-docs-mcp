@@ -1,0 +1,10 @@
+# Falco rules
+- macro: open_write
+  condition: evt.type=open
+
+# Detect shells
+- rule: Terminal shell in container
+  desc: A shell was spawned
+  condition: spawned_process and container
+  output: "shell in %container.name"
+  priority: NOTICE

@@ -1,0 +1,38 @@
+name: deploy
+# workflow_run is normally risky (it can imply checking out attacker-controlled refs), but this
+# job never checks out code or downloads workflow_run artifacts — it only SSHes to the droplet
+# and pulls the already-published, cosign-verified image by tag, so there is nothing to inject.
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [build-server]
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+jobs:
+  droplet:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+        with:
+          host: ${{ secrets.DROPLET_HOST }}
+          username: ${{ secrets.DROPLET_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd /opt/kube-docs-mcp
+            IMG=ghcr.io/${{ github.repository_owner }}/kube-docs-mcp:latest
+            docker pull "$IMG"
+            DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMG")
+            cosign verify --certificate-identity-regexp='^https://github.com/${{ github.repository }}/' --certificate-oidc-issuer=https://token.actions.githubusercontent.com "$DIGEST" >/dev/null
+            docker compose up -d --remove-orphans
+            sleep 5
+            docker compose ps
+            for i in $(seq 1 30); do s=$(docker inspect --format "{{.State.Health.Status}}" kube-docs-mcp); [ "$s" = healthy ] && break; sleep 5; done; [ "$s" = healthy ] || { docker compose logs --tail=80 kube-docs-mcp; exit 1; }

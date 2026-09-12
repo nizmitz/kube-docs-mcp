@@ -1,0 +1,17 @@
+provider: gke
+license: CC-BY-4.0
+attribution: "GKE documentation © Google, CC BY 4.0"
+entries:
+  - key: cloud.google.com/neg
+    applies_to: [Service]
+    value_type: json
+    example: '{"ingress": true}'
+    description: Enables container-native load balancing with network endpoint groups.
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/standalone-neg
+  - key: networking.gke.io/load-balancer-type
+    applies_to: [Service]
+    value_type: enum
+    allowed_values: [Internal]
+    description: Creates an internal passthrough Network Load Balancer instead of external.
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+    deprecated: "use spec.loadBalancerClass"

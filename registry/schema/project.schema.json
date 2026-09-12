@@ -1,0 +1,448 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kubedocs.nizmitz.com/schema/project.schema.json",
+  "title": "kube-docs-mcp project registry entry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "slug",
+    "name",
+    "category",
+    "homepage",
+    "license",
+    "attribution",
+    "source"
+  ],
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,40}$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "enum": [
+        "core",
+        "cncf",
+        "cloud",
+        "controller",
+        "vendor",
+        "bootstrap"
+      ]
+    },
+    "homepage": {
+      "type": "string",
+      "format": "uri"
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "docs"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "docs": {
+          "type": "string"
+        }
+      }
+    },
+    "attribution": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repo",
+        "versions"
+      ],
+      "properties": {
+        "repo": {
+          "$ref": "#/$defs/repo"
+        },
+        "versions": {
+          "$ref": "#/$defs/versions"
+        }
+      }
+    },
+    "schemas": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/schemaSource"
+      }
+    },
+    "docs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/docsSource"
+      }
+    },
+    "annotations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/annotationSource"
+      }
+    }
+  },
+  "$defs": {
+    "repo": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy"
+      ],
+      "properties": {
+        "strategy": {
+          "enum": [
+            "latest-minors",
+            "latest-releases",
+            "fixed"
+          ]
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "default": 2
+        },
+        "tag_pattern": {
+          "type": "string",
+          "default": "^v?(\\d+)\\.(\\d+)\\.(\\d+)$"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "description": "fixed: explicit tags or branch names (branch \u2192 version shown as the branch name, major/minor/patch = 0)"
+        },
+        "include_prerelease": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "strategy": {
+                "const": "fixed"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "tags"
+            ]
+          }
+        }
+      ]
+    },
+    "ref": {
+      "description": "Git ref template. Placeholders: {tag} {major} {minor} {patch}. Optional '|' separated fallbacks, e.g. 'release-{major}.{minor}|main'.",
+      "type": "string",
+      "default": "{tag}"
+    },
+    "schemaSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "openapi-v3",
+            "crd-yaml",
+            "crd-release-asset",
+            "jsonschema-dir",
+            "opa-capabilities"
+          ]
+        },
+        "repo": {
+          "$ref": "#/$defs/repo"
+        },
+        "ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "asset": {
+          "type": "string",
+          "description": "crd-release-asset: release asset filename template, e.g. cert-manager.crds.yaml"
+        },
+        "strict": {
+          "type": "boolean",
+          "default": true,
+          "description": "emit additionalProperties:false where CRD does not preserve unknown fields"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "enum": [
+                  "openapi-v3",
+                  "crd-yaml",
+                  "jsonschema-dir",
+                  "opa-capabilities"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "paths"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "crd-release-asset"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "asset"
+            ]
+          }
+        }
+      ]
+    },
+    "docsSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "root",
+        "include",
+        "url"
+      ],
+      "properties": {
+        "repo": {
+          "$ref": "#/$defs/repo"
+        },
+        "ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "format": {
+          "enum": [
+            "hugo-md",
+            "mkdocs-md",
+            "docusaurus-md",
+            "plain-md",
+            "mdx",
+            "sphinx-rst",
+            "yaml-comments"
+          ]
+        },
+        "root": {
+          "type": "string",
+          "description": "Docs root inside the checkout. Placeholders {major} {minor} {tag}; '|' separated fallbacks, first existing wins, e.g. 'content/v{major}.{minor}-docs|content/docs'"
+        },
+        "include": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "url": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "base"
+          ],
+          "properties": {
+            "base": {
+              "type": "string",
+              "description": "URL prefix template; placeholders {major} {minor} {tag}"
+            },
+            "strip_ext": {
+              "type": "boolean",
+              "default": true
+            },
+            "index_file": {
+              "type": "string",
+              "default": "_index",
+              "description": "basename treated as directory index"
+            },
+            "trailing_slash": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "license": {
+          "type": "string",
+          "description": "override docs license for this source"
+        }
+      }
+    },
+    "annotationSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "k8s-wellknown",
+            "md-table",
+            "md-headings",
+            "curated-yaml"
+          ]
+        },
+        "repo": {
+          "$ref": "#/$defs/repo"
+        },
+        "ref": {
+          "$ref": "#/$defs/ref"
+        },
+        "path": {
+          "type": "string",
+          "description": "file path in repo (md-table, k8s-wellknown) or registry-relative (curated-yaml)"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "doc_url for auto-extracted entries"
+        },
+        "columns": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "key"
+          ],
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "values": {
+              "type": "string"
+            },
+            "applies_to": {
+              "type": "string"
+            },
+            "since": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "default": {
+              "type": "string"
+            }
+          }
+        },
+        "applies_to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "default kinds when table has no column"
+        },
+        "heading_level": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 4,
+          "default": 2,
+          "description": "md-headings: heading level whose text is the annotation key"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "md-table"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "path",
+              "url",
+              "columns"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "k8s-wellknown"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "path",
+              "url"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "curated-yaml"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "path"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "md-headings"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "path",
+              "url"
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

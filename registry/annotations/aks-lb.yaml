@@ -1,0 +1,176 @@
+provider: aks
+license: CC-BY-4.0
+attribution: "Descriptions summarised from the cloud-provider-azure LoadBalancer annotations reference (cloud-provider-azure.sigs.k8s.io), © The Kubernetes Authors. Always follow doc_url for authoritative details."
+entries:
+  - key: service.beta.kubernetes.io/azure-load-balancer-internal
+    applies_to: [Service]
+    value_type: bool
+    allowed_values: ["true", "false"]
+    example: 'service.beta.kubernetes.io/azure-load-balancer-internal: "true"'
+    description: "Creates an internal Azure Load Balancer (private IP in the VNet) for the Service instead of a public one."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-internal-subnet
+    applies_to: [Service]
+    value_type: string
+    description: "Subnet name in which the internal load balancer frontend IP is allocated. Only meaningful with azure-load-balancer-internal=true."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-mode
+    applies_to: [Service]
+    value_type: string
+    allowed_values: ["auto", "<vmset-name>"]
+    description: "Selects which VM set (availability set / VMSS) backs the load balancer for this Service, or auto to pick the one with fewest rules."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-dns-label-name
+    applies_to: [Service]
+    value_type: string
+    description: "DNS label assigned to the Service's public IP, giving it a <label>.<region>.cloudapp.azure.com FQDN."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-shared-securityrule
+    applies_to: [Service]
+    value_type: bool
+    allowed_values: ["true", "false"]
+    description: "Uses a shared Azure security rule (Augmented Security Rules) for exposing the Service instead of per-Service NSG rules."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-resource-group
+    applies_to: [Service]
+    value_type: string
+    description: "Resource group containing the pre-created public IP for this Service when it lives outside the cluster's node resource group."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-allowed-service-tags
+    applies_to: [Service]
+    value_type: string
+    description: "Comma-separated Azure service tags allowed to reach the Service; the cloud provider creates matching NSG allow rules."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-allowed-ip-ranges
+    applies_to: [Service]
+    value_type: string
+    description: "Comma-separated CIDR ranges allowed to reach the Service via NSG rules (alternative to spec.loadBalancerSourceRanges)."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-tcp-idle-timeout
+    applies_to: [Service]
+    value_type: int
+    description: "TCP idle timeout in minutes (4-100) for load balancer rules of this Service."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-pip-name
+    applies_to: [Service]
+    value_type: string
+    description: "Name of an existing public IP resource to use as the Service frontend (IPv4)."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-pip-name-ipv6
+    applies_to: [Service]
+    value_type: string
+    description: "Name of an existing IPv6 public IP resource to use as the Service frontend in dual-stack clusters."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-pip-prefix-id
+    applies_to: [Service]
+    value_type: string
+    description: "Resource ID of a public IP prefix from which the Service's IPv4 public IP is allocated."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-pip-prefix-id-ipv6
+    applies_to: [Service]
+    value_type: string
+    description: "Resource ID of a public IP prefix from which the Service's IPv6 public IP is allocated (dual-stack)."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-pip-tags
+    applies_to: [Service]
+    value_type: string
+    example: 'service.beta.kubernetes.io/azure-pip-tags: "team=platform,env=prod"'
+    description: "Azure resource tags (a=b,c=d) applied to the public IP created for the Service."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-pip-ip-tags
+    applies_to: [Service]
+    value_type: string
+    example: 'service.beta.kubernetes.io/azure-pip-ip-tags: "RoutingPreference=Internet"'
+    description: "IP tags (a=b,c=d) set on the created public IP, for example RoutingPreference=Internet."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-health-probe-protocol
+    applies_to: [Service]
+    value_type: enum
+    allowed_values: ["Tcp", "Http", "Https"]
+    description: "Protocol used by the load balancer health probe for all ports of the Service."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path
+    applies_to: [Service]
+    value_type: string
+    description: "HTTP(S) request path used by the health probe when the probe protocol is Http or Https."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-health-probe-interval
+    applies_to: [Service]
+    value_type: int
+    description: "Interval in seconds between health probe attempts."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-health-probe-num-of-probe
+    applies_to: [Service]
+    value_type: int
+    description: "Number of consecutive failed probes before a backend is marked unhealthy."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-ipv4
+    applies_to: [Service]
+    value_type: string
+    description: "Specific IPv4 address to assign to the load balancer frontend."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-ipv6
+    applies_to: [Service]
+    value_type: string
+    description: "Specific IPv6 address to assign to the load balancer frontend."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-enable-high-availability-ports
+    applies_to: [Service]
+    value_type: bool
+    allowed_values: ["true", "false"]
+    description: "Enables HA Ports (all-ports rule) on an internal Standard load balancer for this Service."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-deny-all-except-load-balancer-source-ranges
+    applies_to: [Service]
+    value_type: bool
+    allowed_values: ["true", "false"]
+    description: "Adds an NSG deny-all rule so only spec.loadBalancerSourceRanges can reach the Service."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-additional-public-ips
+    applies_to: [Service]
+    value_type: string
+    description: "Comma-separated additional public IP addresses attached to the load balancer besides the Service's own."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-disable-load-balancer-floating-ip
+    applies_to: [Service]
+    value_type: bool
+    allowed_values: ["true", "false"]
+    description: "Disables floating IP (Direct Server Return) on the load balancer rules, so backends see the node IP instead of the frontend IP."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-disable-tcp-reset
+    applies_to: [Service]
+    value_type: bool
+    allowed_values: ["true", "false"]
+    description: "Controls whether the load balancer sends TCP RST on idle timeout (true disables TCP reset)."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/azure-load-balancer-configurations
+    applies_to: [Service]
+    value_type: string
+    description: "Comma-separated names of load balancer configurations to place this Service on when multiple Standard load balancers are configured."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/port_{port}_no_lb_rule
+    applies_to: [Service]
+    value_type: bool
+    description: "Per-port switch: skip creating a load balancer rule for the given Service port (replace {port} with the port number)."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/port_{port}_no_probe_rule
+    applies_to: [Service]
+    value_type: bool
+    description: "Per-port switch: skip creating a health probe for the given Service port."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/port_{port}_health-probe_protocol
+    applies_to: [Service]
+    value_type: enum
+    allowed_values: ["Tcp", "Http", "Https"]
+    description: "Per-port health probe protocol override."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/port_{port}_health-probe_port
+    applies_to: [Service]
+    value_type: int
+    description: "Per-port override of the port used by the health probe."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/
+  - key: service.beta.kubernetes.io/port_{port}_health-probe_request-path
+    applies_to: [Service]
+    value_type: string
+    description: "Per-port health probe HTTP(S) request path override."
+    doc_url: https://cloud-provider-azure.sigs.k8s.io/topics/loadbalancer/

@@ -1,0 +1,129 @@
+provider: gke
+license: CC-BY-4.0
+attribution: "Descriptions summarised from Google Cloud GKE documentation (docs.cloud.google.com), CC BY 4.0. Always follow doc_url for authoritative details."
+entries:
+  # --- LoadBalancer Service parameters ---
+  - key: networking.gke.io/load-balancer-type
+    applies_to: [Service]
+    value_type: enum
+    allowed_values: ["Internal"]
+    example: 'networking.gke.io/load-balancer-type: "Internal"'
+    description: "Creates an internal passthrough Network Load Balancer for a Service of type LoadBalancer instead of an external one. Replaces the deprecated cloud.google.com/load-balancer-type annotation."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+  - key: cloud.google.com/load-balancer-type
+    applies_to: [Service]
+    value_type: enum
+    allowed_values: ["Internal"]
+    description: "Deprecated form of networking.gke.io/load-balancer-type; still honored on older clusters to request an internal passthrough Network Load Balancer."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+    deprecated: "use networking.gke.io/load-balancer-type"
+  - key: cloud.google.com/l4-rbs
+    applies_to: [Service]
+    value_type: enum
+    allowed_values: ["enabled"]
+    example: 'cloud.google.com/l4-rbs: "enabled"'
+    description: "Requests a backend-service-based external passthrough Network Load Balancer (regional backend service) instead of a target-pool-based one for an external LoadBalancer Service."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+  - key: networking.gke.io/weighted-load-balancing
+    applies_to: [Service]
+    value_type: enum
+    allowed_values: ["pods-per-node"]
+    description: "Enables weighted load balancing by pods per node: nodes running more serving Pods receive a proportionally larger share of new connections. Requires externalTrafficPolicy Local."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+  - key: cloud.google.com/network-tier
+    applies_to: [Service]
+    value_type: enum
+    allowed_values: ["Standard", "Premium"]
+    description: "Selects the Network Service Tier (Standard or Premium) for the forwarding rule of an external passthrough Network Load Balancer Service."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+  - key: networking.gke.io/internal-load-balancer-allow-global-access
+    applies_to: [Service]
+    value_type: bool
+    allowed_values: ["true", "false"]
+    description: "Allows clients from any region in the VPC (and connected networks) to reach an internal passthrough Network Load Balancer Service, instead of only the load balancer's region."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+  - key: networking.gke.io/internal-load-balancer-subnet
+    applies_to: [Service]
+    value_type: string
+    description: "Name of the subnet from which the internal passthrough Network Load Balancer's IPv4 address is allocated. Prefer networking.gke.io/load-balancer-subnet for dual-stack."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+  - key: networking.gke.io/load-balancer-subnet
+    applies_to: [Service]
+    value_type: string
+    description: "Name of the subnet used to allocate the load balancer's IPv4 and/or IPv6 address for a LoadBalancer Service (internal or external, single- or dual-stack)."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+  - key: networking.gke.io/load-balancer-ip-addresses
+    applies_to: [Service]
+    value_type: string
+    example: 'networking.gke.io/load-balancer-ip-addresses: "my-ipv4-address,my-ipv6-address"'
+    description: "Comma-separated names of reserved Compute Engine IP address resources (not the literal IPs) to use for a LoadBalancer Service; used for dual-stack and for IPv6."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/concepts/service-load-balancer-parameters
+  # --- Ingress ---
+  - key: kubernetes.io/ingress.class
+    applies_to: [Ingress]
+    value_type: enum
+    allowed_values: ["gce", "gce-internal"]
+    example: 'kubernetes.io/ingress.class: "gce-internal"'
+    description: "Selects the GKE Ingress controller: gce for an external Application Load Balancer, gce-internal for an internal Application Load Balancer. GKE still uses this annotation rather than spec.ingressClassName."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/ingress-configuration
+  - key: kubernetes.io/ingress.global-static-ip-name
+    applies_to: [Ingress]
+    value_type: string
+    description: "Name of a reserved global static external IP address to use for the external Application Load Balancer created by the Ingress."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/ingress-configuration
+  - key: kubernetes.io/ingress.regional-static-ip-name
+    applies_to: [Ingress]
+    value_type: string
+    description: "Name of a reserved regional static internal IP address to use for an internal Application Load Balancer Ingress (class gce-internal)."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/internal-load-balance-ingress
+  - key: kubernetes.io/ingress.allow-http
+    applies_to: [Ingress]
+    value_type: bool
+    allowed_values: ["true", "false"]
+    description: "When false, the Ingress load balancer serves HTTPS only and no HTTP forwarding rule is created. Default true."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/ingress-configuration
+  - key: ingress.gcp.kubernetes.io/pre-shared-cert
+    applies_to: [Ingress]
+    value_type: string
+    description: "Comma-separated names of pre-created Compute Engine SSL certificate resources to attach to the Ingress instead of Kubernetes TLS Secrets."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/ingress-configuration
+  - key: networking.gke.io/managed-certificates
+    applies_to: [Ingress]
+    value_type: string
+    description: "Comma-separated names of ManagedCertificate resources whose Google-managed SSL certificates are attached to the Ingress."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/managed-certs
+  - key: networking.gke.io/v1beta1.FrontendConfig
+    applies_to: [Ingress]
+    value_type: string
+    description: "Name of a FrontendConfig resource attached to the Ingress to configure SSL policy and HTTP-to-HTTPS redirects on the load balancer frontend."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/ingress-configuration
+  - key: networking.gke.io/suppress-firewall-xpn-error
+    applies_to: [Ingress]
+    value_type: bool
+    allowed_values: ["true"]
+    description: "In Shared VPC setups, suppresses the firewall-permission error event on the Ingress when GKE cannot create firewall rules in the host project."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/ingress-configuration
+  # --- Service-side Ingress/NEG settings ---
+  - key: cloud.google.com/neg
+    applies_to: [Service]
+    value_type: json
+    example: 'cloud.google.com/neg: ''{"ingress": true}'''
+    description: "Enables container-native load balancing with Network Endpoint Groups. {\"ingress\": true} for Ingress-backed NEGs; {\"exposed_ports\": {\"80\": {\"name\": \"neg-name\"}}} for standalone NEGs."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/standalone-neg
+  - key: cloud.google.com/neg-status
+    applies_to: [Service]
+    value_type: json
+    description: "Read-only status annotation written by GKE listing the NEG names and zones created for a Service with standalone NEGs."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/standalone-neg
+  - key: cloud.google.com/backend-config
+    applies_to: [Service]
+    value_type: json
+    example: 'cloud.google.com/backend-config: ''{"default": "my-backendconfig"}'''
+    description: "Associates BackendConfig resources with a Service's ports ({\"ports\": {...}} or {\"default\": \"name\"}) to configure Cloud Armor, IAP, CDN, timeouts, health checks, session affinity and logging on the backend service."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/ingress-configuration
+  - key: cloud.google.com/app-protocols
+    applies_to: [Service]
+    value_type: json
+    example: 'cloud.google.com/app-protocols: ''{"my-port": "HTTPS"}'''
+    description: "Sets the protocol (HTTP, HTTPS or HTTP2) the load balancer uses to talk to each named Service port backend."
+    doc_url: https://docs.cloud.google.com/kubernetes-engine/docs/how-to/ingress-configuration

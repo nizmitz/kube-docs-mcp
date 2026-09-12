@@ -1,0 +1,35 @@
+slug: aws-load-balancer-controller
+name: AWS Load Balancer Controller (EKS)
+category: cloud
+homepage: https://kubernetes-sigs.github.io/aws-load-balancer-controller/
+license: { code: Apache-2.0, docs: Apache-2.0 }
+attribution: "AWS Load Balancer Controller documentation and CRDs © The Kubernetes Authors, Apache 2.0."
+source:
+  repo: kubernetes-sigs/aws-load-balancer-controller
+  versions:
+    strategy: latest-minors
+    count: 2
+    tag_pattern: '^v(\d+)\.(\d+)\.(\d+)$'
+schemas:
+  - type: crd-yaml
+    paths: ['config/crd/bases/*.yaml']
+docs:
+  - format: mkdocs-md
+    root: docs
+    include:
+      - 'guide/**/*.md'
+      - 'deploy/configurations.md'
+    url:
+      base: 'https://kubernetes-sigs.github.io/aws-load-balancer-controller/v{major}.{minor}/'
+      strip_ext: true
+      index_file: index
+annotations:
+  - type: md-table
+    path: docs/guide/ingress/annotations.md
+    url: https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/guide/ingress/annotations/
+    columns: { key: "Name", type: "Type", default: "Default", applies_to: "Location" }
+  - type: md-table
+    path: docs/guide/service/annotations.md
+    url: https://kubernetes-sigs.github.io/aws-load-balancer-controller/latest/guide/service/annotations/
+    columns: { key: "Name", type: "Type", default: "Default" }
+    applies_to: [Service]

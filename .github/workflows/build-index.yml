@@ -1,0 +1,125 @@
+name: build-index
+on:
+  schedule:
+    - cron: "0 3 * * 1"   # weekly Monday 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      projects:
+        description: "space-separated slugs (empty = all)"
+        default: ""
+  push:
+    branches: [main]
+    paths: ["registry/**", "ingest/**"]
+permissions:
+  contents: read
+concurrency:
+  group: build-index
+  cancel-in-progress: false
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.m.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with: { working-directory: ingest }
+      - run: uv sync --frozen
+        working-directory: ingest
+      - id: m
+        working-directory: ingest
+        env:
+          REQ: ${{ github.event.inputs.projects }}
+        run: |
+          set -euo pipefail
+          if [ -n "$REQ" ]; then slugs="$REQ"; else slugs=$(uv run ingest list --slugs); fi
+          # shellcheck disable=SC2086
+          echo "matrix=$(printf '%s\n' $slugs | jq -R . | jq -cs '{slug: .}')" >> "$GITHUB_OUTPUT"
+
+  shard:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with: { working-directory: ingest }
+      - run: uv sync --frozen
+        working-directory: ingest
+      - name: Build shard
+        id: build
+        working-directory: ingest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLUG: ${{ matrix.slug }}
+        run: uv run ingest build "$SLUG" --out "../shards/$SLUG.sqlite" --work ../work
+        continue-on-error: true
+      - name: Reuse last-good shard on failure
+        if: steps.build.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLUG: ${{ matrix.slug }}
+        run: |
+          set -euo pipefail
+          mkdir -p shards
+          if gh release download index-latest --pattern "shard-$SLUG.sqlite.zst" --dir shards; then
+            zstd -d --rm "shards/shard-$SLUG.sqlite.zst" -o "shards/$SLUG.sqlite"
+            sqlite3 "shards/$SLUG.sqlite" "UPDATE versions SET stale=1"
+            echo "::warning::$SLUG build failed; reused previous shard (stale)"
+          else
+            echo "::error::$SLUG build failed and no previous shard exists"; exit 1
+          fi
+      - run: zstd -19 -T0 "shards/$SLUG.sqlite" -o "shards/shard-$SLUG.sqlite.zst"
+        env:
+          SLUG: ${{ matrix.slug }}
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with: { name: "shard-${{ matrix.slug }}", path: "shards/*.sqlite", retention-days: 3 }
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with: { name: "shardz-${{ matrix.slug }}", path: "shards/shard-*.sqlite.zst", retention-days: 3 }
+
+  merge:
+    needs: shard
+    runs-on: ubuntu-latest
+    permissions: { contents: write, id-token: write }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with: { working-directory: ingest }
+      - run: uv sync --frozen
+        working-directory: ingest
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { pattern: "shard-*", path: shards, merge-multiple: true }
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { pattern: "shardz-*", path: dist, merge-multiple: true }
+      - working-directory: ingest
+        run: |
+          set -euo pipefail
+          uv run ingest merge --shards ../shards/*.sqlite --out ../index.sqlite --ingest-sha "$GITHUB_SHA" --registry-sha "$GITHUB_SHA"
+          uv run ingest manifest --index ../index.sqlite --out ../dist
+          uv run ingest attribution --index ../index.sqlite > ../dist/ATTRIBUTION.md
+          ls -la ../dist
+      - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
+      - run: cosign sign-blob --yes --bundle dist/index.sqlite.zst.sigstore.json dist/index.sqlite.zst
+      - name: Publish rolling release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: index-latest
+          name: "Index (rolling)"
+          body: "Rolling index build. See manifest.json. Built from ${{ github.sha }}."
+          prerelease: false
+          files: dist/*
+      - name: Publish dated release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: index-${{ github.run_id }}
+          name: "Index ${{ github.run_id }}"
+          files: |
+            dist/index.sqlite.zst
+            dist/manifest.json
+            dist/ATTRIBUTION.md

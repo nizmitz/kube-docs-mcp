@@ -1,0 +1,18 @@
+slug: gke
+name: Google Kubernetes Engine (GKE)
+category: cloud
+homepage: https://cloud.google.com/kubernetes-engine
+license: { code: Apache-2.0, docs: CC-BY-4.0 }
+attribution: "GKE documentation © Google LLC, CC BY 4.0 (curated excerpts with links). GKE Gateway API CRDs © Google LLC, Apache 2.0."
+source:
+  repo: GoogleCloudPlatform/gke-gateway-api
+  versions:
+    strategy: latest-minors
+    count: 1
+    tag_pattern: '^v(\d+)\.(\d+)\.(\d+)$'
+schemas:
+  - type: crd-yaml
+    paths: ['config/crd/*.yaml']
+annotations:
+  - type: curated-yaml
+    path: annotations/gke.yaml

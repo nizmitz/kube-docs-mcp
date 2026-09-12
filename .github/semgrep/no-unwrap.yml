@@ -1,0 +1,11 @@
+rules:
+  - id: no-unwrap-in-server
+    languages: [rust]
+    severity: ERROR
+    message: "Do not use unwrap()/expect() in server code; propagate errors."
+    paths:
+      include: ["server/src/**"]
+      exclude: ["server/src/**/tests.rs", "server/tests/**"]
+    pattern-either:
+      - pattern: $X.unwrap()
+      - pattern: $X.expect($M)

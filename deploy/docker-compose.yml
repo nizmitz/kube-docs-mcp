@@ -1,0 +1,34 @@
+# /opt/kube-docs-mcp/docker-compose.yml on the droplet.
+# Joins the existing `ghost_default` network so the ghost nginx container can proxy to `kube-docs-mcp:8080`.
+services:
+  kube-docs-mcp:
+    image: ghcr.io/nizmitz/kube-docs-mcp:latest
+    container_name: kube-docs-mcp
+    restart: unless-stopped
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    environment:
+      KD_MANIFEST_URL: https://github.com/nizmitz/kube-docs-mcp/releases/download/index-latest/manifest.json
+      KD_ALLOWED_HOSTS: kubedocs.nizmitz.com,kube-docs-mcp:8080,127.0.0.1:8080
+      RUST_LOG: info
+    volumes:
+      - kube-docs-index:/data
+    tmpfs:
+      - /tmp:size=8m
+    mem_limit: 96m
+    memswap_limit: 96m
+    cpus: 0.8
+    pids_limit: 64
+    logging:
+      driver: json-file
+      options: { max-size: "5m", max-file: "3" }
+    networks: [ghost_default]
+
+volumes:
+  kube-docs-index:
+
+networks:
+  ghost_default:
+    external: true

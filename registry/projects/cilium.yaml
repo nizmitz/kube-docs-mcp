@@ -1,0 +1,38 @@
+slug: cilium
+name: Cilium
+category: cncf
+homepage: https://cilium.io
+license: { code: Apache-2.0, docs: Apache-2.0 }
+attribution: "Cilium documentation and CRDs © Cilium Authors, Apache 2.0."
+source:
+  repo: cilium/cilium
+  versions:
+    strategy: latest-minors
+    count: 2
+    tag_pattern: '^v(\d+)\.(\d+)\.(\d+)$'
+schemas:
+  - type: crd-yaml
+    paths:
+      - 'pkg/k8s/apis/cilium.io/client/crds/v2/*.yaml'
+      - 'pkg/k8s/apis/cilium.io/client/crds/v2alpha1/*.yaml'
+docs:
+  - format: sphinx-rst
+    root: Documentation
+    include:
+      - 'cmdref/cilium-agent.md'
+      - 'cmdref/cilium-dbg.md'
+      - 'cmdref/cilium-operator.md'
+      - 'configuration/**/*.rst'
+      - 'network/kubernetes/**/*.rst'
+      - 'network/servicemesh/**/*.rst'
+      - 'network/lb-ipam.rst'
+      - 'network/l2-announcements.rst'
+      - 'network/bgp*.rst'
+      - 'security/policy/**/*.rst'
+      - 'helm-reference.rst'
+    exclude:
+      - '**/index.rst'
+    url:
+      base: 'https://docs.cilium.io/en/v{major}.{minor}/'
+      strip_ext: true
+      index_file: index

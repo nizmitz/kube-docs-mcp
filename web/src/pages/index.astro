@@ -1,0 +1,219 @@
+---
+import "../styles/global.css";
+const repo = "https://github.com/nizmitz/kube-docs-mcp";
+const endpoint = "https://kubedocs.nizmitz.com/mcp";
+const tools = [
+  [
+    "explain",
+    "kubectl explain for any indexed kind: field tree, types, required flags, descriptions. Version-pinned.",
+  ],
+  [
+    "validate_manifest",
+    "Validate multi-document YAML against the real OpenAPI / CRD schema. Strict or lenient.",
+  ],
+  ["get_schema", "Raw JSON Schema subtree for a kind (draft-04)."],
+  ["search_fields", "Which kinds have a field named X. Searches field names and descriptions."],
+  [
+    "search_annotations",
+    "Annotations, labels and taints: Kubernetes well-known, GKE, EKS, AKS, Argo CD, cert-manager…",
+  ],
+  ["get_annotation", "One annotation: values, applies-to, upstream doc link."],
+  [
+    "search_docs",
+    "BM25 full-text search over reference documentation. Returns snippet + upstream URL.",
+  ],
+  ["get_doc", "Full text of one documentation section, paginated."],
+  ["list_projects", "Indexed projects, versions, pinned vs unpinned, build date."],
+  ["list_kinds", "Kinds available for a project/version/group."],
+];
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>kube-docs-mcp — Kubernetes schemas, annotations and docs for AI agents</title>
+    <meta
+      name="description"
+      content="Public MCP server: kubectl explain, manifest validation, annotation catalog (GKE/EKS/AKS) and reference docs search for Kubernetes and CNCF projects."
+    />
+  </head>
+  <body>
+    <main>
+      <header class="top">
+        <a class="brand" href="/">
+          kube-docs-mcp
+        </a>
+        <nav>
+          <a href="#install">Install</a>
+          <a href="#tools">Tools</a>
+          <a href="#projects">Projects</a>
+          <a href="/status">Status</a>
+          <a href={repo}>GitHub</a>
+        </nav>
+      </header>
+
+      <h1>Structured Kubernetes knowledge for AI agents.</h1>
+      <p class="lede">
+        A public <a href="https://modelcontextprotocol.io">MCP</a> server with{" "}
+        <code>kubectl explain</code>, manifest validation, an annotation catalog for GKE / EKS / AKS
+        and controllers, and reference docs search across Kubernetes and CNCF projects.
+        Version-pinned, built from upstream git tags, refreshed weekly.
+      </p>
+      <p>
+        <span class="badge">endpoint</span> <code>{endpoint}</code>
+        <span class="badge">no auth</span> <span class="badge">rate limited</span>
+        <span class="badge" id="build">
+          index: loading…
+        </span>
+      </p>
+
+      <h2 id="install">Install</h2>
+      <div class="tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-tab="claude">
+          Claude Code
+        </button>
+        <button role="tab" aria-selected="false" data-tab="cursor">
+          Cursor
+        </button>
+        <button role="tab" aria-selected="false" data-tab="codex">
+          Codex
+        </button>
+        <button role="tab" aria-selected="false" data-tab="json">
+          Generic JSON
+        </button>
+        <button role="tab" aria-selected="false" data-tab="local">
+          Local / offline
+        </button>
+      </div>
+      <div class="tabpanel" data-panel="claude">
+        <pre><code>claude mcp add --transport http kubedocs {endpoint}</code></pre>
+      </div>
+      <div class="tabpanel" data-panel="cursor" hidden>
+        <p class="muted">
+          Settings → MCP → Add server, or <code>.cursor/mcp.json</code>:
+        </p>
+        <pre><code>{`{ "mcpServers": { "kubedocs": { "url": "${endpoint}" } } }`}</code></pre>
+      </div>
+      <div class="tabpanel" data-panel="codex" hidden>
+        <pre><code>codex mcp add kubedocs --url {endpoint}</code></pre>
+      </div>
+      <div class="tabpanel" data-panel="json" hidden>
+        <pre><code>{`{ "mcpServers": { "kubedocs": { "type": "http", "url": "${endpoint}" } } }`}</code></pre>
+      </div>
+      <div class="tabpanel" data-panel="local" hidden>
+        <p class="muted">
+          Run the same server on your machine with a downloaded index (stdio transport):
+        </p>
+        <pre><code>{`curl -L ${repo}/releases/download/index-latest/index.sqlite.zst | zstd -d -o index.sqlite
+kube-docs-mcp serve --stdio --index index.sqlite`}</code></pre>
+      </div>
+
+      <h2 id="tools">Tools</h2>
+      <div class="grid">
+        {tools.map(([name, desc]) => (
+          <div class="card">
+            <h3>{name}</h3>
+            <p>{desc}</p>
+          </div>
+        ))}
+      </div>
+
+      <h2 id="projects">Indexed projects</h2>
+      <p class="muted">
+        Live from <a href="/status">/status</a>. <em>pinned</em> = built from the project's git tag;
+        <em>latest</em> = unpinned catalog entry from
+        <a href="https://github.com/imroc/kubeschemas">imroc/kubeschemas</a>.
+      </p>
+      <div class="tablewrap">
+        <table id="projects-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Category</th>
+              <th>Versions</th>
+              <th>Kinds</th>
+              <th>Docs</th>
+              <th>Annotations</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="6" class="muted">
+                Loading…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Want a project added? It's one YAML file: see
+        <a href={`${repo}/blob/main/CONTRIBUTING.md`}>CONTRIBUTING.md</a>.
+      </p>
+
+      <h2 id="privacy">Privacy</h2>
+      <p>
+        The server keeps only aggregate counters (tool name, project, outcome, latency). It does not
+        store query text, manifests you validate, or IP addresses. The reverse proxy keeps standard
+        access logs for 7 days. Fair use: 60 requests/minute per IP.
+      </p>
+
+      <h2 id="attribution">Attribution</h2>
+      <p>
+        Documentation excerpts keep their upstream licenses (mostly Apache-2.0 and CC BY 4.0) and
+        always link back to the source. The full list ships as <code>ATTRIBUTION.md</code> with
+        every
+        <a href={`${repo}/releases`}>index release</a>. Server and pipeline code: Apache-2.0.
+      </p>
+
+      <footer>
+        <span>kube-docs-mcp</span> · <a href={repo}>source</a> ·{" "}
+        <a href={`${repo}/security/advisories`}>security</a>
+      </footer>
+    </main>
+
+    <script>
+      const tabs = document.querySelectorAll<HTMLButtonElement>("[role=tab]");
+      tabs.forEach((b) =>
+        b.addEventListener("click", () => {
+          tabs.forEach((t) => t.setAttribute("aria-selected", String(t === b)));
+          document.querySelectorAll<HTMLElement>("[data-panel]").forEach((p) => {
+            p.hidden = p.dataset.panel !== b.dataset.tab;
+          });
+        }),
+      );
+
+      type Ver = { version: string; pinned: boolean; stale: boolean; kinds: number; docs: number };
+      type Proj = {
+        slug: string;
+        name: string;
+        category: string;
+        annotations: number;
+        versions: Ver[];
+      };
+      fetch("/status")
+        .then((r) => r.json())
+        .then((s: { build_date?: string; projects?: Proj[] }) => {
+          const badge = document.getElementById("build");
+          if (badge && s.build_date) badge.textContent = `index: ${s.build_date.slice(0, 10)}`;
+          const tb = document.querySelector("#projects-table tbody");
+          if (!tb || !s.projects) return;
+          tb.innerHTML = "";
+          for (const p of s.projects) {
+            const vers = p.versions
+              .map((v) => `${v.version}${v.pinned ? "" : " (latest)"}${v.stale ? " ⚠" : ""}`)
+              .join(", ");
+            const kinds = p.versions.reduce((a, v) => a + (v.kinds || 0), 0);
+            const docs = p.versions.reduce((a, v) => a + (v.docs || 0), 0);
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${p.name}</td><td class="muted">${p.category}</td><td><code>${vers}</code></td><td>${kinds}</td><td>${docs}</td><td>${p.annotations ?? 0}</td>`;
+            tb.appendChild(tr);
+          }
+        })
+        .catch(() => {
+          const tb = document.querySelector("#projects-table tbody");
+          if (tb) tb.innerHTML = '<tr><td colspan="6" class="muted">Status unavailable.</td></tr>';
+        });
+    </script>
+  </body>
+</html>

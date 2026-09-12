@@ -1,0 +1,39 @@
+slug: kyverno
+name: Kyverno
+category: cncf
+homepage: https://kyverno.io
+license: { code: Apache-2.0, docs: Apache-2.0 }
+attribution: "Kyverno documentation and CRDs © The Kyverno Authors, Apache 2.0."
+source:
+  repo: kyverno/kyverno
+  versions:
+    strategy: latest-minors
+    count: 2
+    tag_pattern: '^v(\d+)\.(\d+)\.(\d+)$'
+schemas:
+  - type: crd-yaml
+    paths:
+      - 'config/crds/kyverno/*.yaml'
+      - 'config/crds/policies.kyverno.io/*.yaml'
+      - 'config/crds/policyreport/*.yaml'
+      - 'config/crds/reports/*.yaml'
+docs:
+  - repo: kyverno/website
+    ref: 'release-{major}-{minor}-0|main'
+    format: mdx
+    root: src/content/docs/docs
+    include:
+      - 'policy-types/**/*.md'
+      - 'policy-types/**/*.mdx'
+      - 'reference/**/*.md'
+      - 'reference/**/*.mdx'
+      - 'kyverno-cli/**/*.md'
+      - 'kyverno-cli/**/*.mdx'
+      - 'installation/customization.md'
+      - 'installation/customization.mdx'
+    exclude:
+      - '**/_meta.yml'
+    url:
+      base: 'https://kyverno.io/docs/'
+      strip_ext: true
+      index_file: index

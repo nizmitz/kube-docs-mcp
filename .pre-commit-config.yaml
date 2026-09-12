@@ -1,0 +1,112 @@
+# Install: cd ingest && uv run pre-commit install
+# All hooks run against locally-installed binaries (language: system) — no
+# per-repo network env builds, so this works offline. See README dev setup
+# for how to get each binary: brew install hadolint actionlint gitleaks
+# shellcheck; uv tool install ruff zizmor yamllint; rustup for cargo.
+default_install_hook_types: [pre-commit, commit-msg]
+repos:
+  - repo: local
+    hooks:
+      - id: check-added-large-files
+        name: check for added large files
+        entry: python3 scripts/check-large-files.py
+        language: system
+      - id: check-json
+        name: check json
+        entry: python3 scripts/check-json.py
+        language: system
+        types: [json]
+      - id: check-toml
+        name: check toml
+        entry: python3 scripts/check-toml.py
+        language: system
+        types: [toml]
+      - id: detect-private-key
+        name: detect private key
+        entry: python3 scripts/check-private-key.py
+        language: system
+        exclude: ^scripts/check-private-key\.py$
+      - id: end-of-file-fixer
+        name: fix end of files
+        entry: python3 scripts/fix-eof.py
+        language: system
+        exclude: ^ingest/tests/fixtures/
+      - id: no-commit-to-branch
+        name: no commit to main
+        entry: bash -c 'test "$(git rev-parse --abbrev-ref HEAD)" != main'
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: gitleaks
+        name: gitleaks (system binary)
+        entry: gitleaks detect --no-git --redact -v --source=. --config=.gitleaks.toml
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: ruff-check
+        name: ruff check (ingest)
+        entry: ruff check --fix
+        language: system
+        files: ^ingest/.*\.py$
+      - id: ruff-format
+        name: ruff format (ingest)
+        entry: ruff format
+        language: system
+        files: ^ingest/.*\.py$
+      - id: mypy
+        name: mypy (ingest)
+        entry: bash -c 'cd ingest && uv run mypy ingest'
+        language: system
+        pass_filenames: false
+        files: ^ingest/
+      - id: yamllint
+        name: yamllint
+        entry: yamllint -c .yamllint.yaml
+        language: system
+        types: [yaml]
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+      - id: actionlint
+        name: actionlint
+        entry: actionlint
+        language: system
+        files: ^\.github/workflows/.*\.ya?ml$
+        pass_filenames: false
+      - id: hadolint
+        name: hadolint
+        entry: hadolint
+        language: system
+        files: Dockerfile$
+      - id: zizmor
+        name: zizmor
+        entry: zizmor --config=zizmor.yml --min-severity=medium .github
+        language: system
+        files: ^\.github/(workflows|actions)/.*\.ya?ml$
+        pass_filenames: false
+      - id: ingest-lint
+        name: registry lint
+        entry: bash -c 'cd ingest && uv run ingest lint'
+        language: system
+        pass_filenames: false
+        files: ^(registry/|ingest/)
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: bash -c 'export PATH="$HOME/.cargo/bin:$PATH"; cd server && cargo fmt --check'
+        language: system
+        pass_filenames: false
+        files: ^server/.*\.rs$
+      - id: cargo-clippy
+        name: cargo clippy
+        entry: bash -c 'export PATH="$HOME/.cargo/bin:$PATH"; cd server && cargo clippy --all-targets -- -D warnings'
+        language: system
+        pass_filenames: false
+        files: ^server/
+      - id: prettier-web
+        name: prettier (web)
+        entry: bash -c 'cd web && npx --no-install prettier --check src'
+        language: system
+        pass_filenames: false
+        files: ^web/src/

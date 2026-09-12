@@ -1,0 +1,11 @@
+rules:
+  cache-poisoning:
+    ignore:
+      # Release-publishing workflow with no explicit package-manager cache configured;
+      # the setup-node step here does not set `cache:`.
+      - build-server.yml:21
+  dangerous-triggers:
+    ignore:
+      # workflow_run here never checks out the triggering ref or downloads its artifacts —
+      # it only SSHes to the droplet and pulls the already cosign-verified published image.
+      - deploy.yml:5

@@ -1,0 +1,41 @@
+slug: aks
+name: Azure Kubernetes Service (AKS)
+category: cloud
+homepage: https://learn.microsoft.com/azure/aks/
+license: { code: MIT, docs: CC-BY-4.0 }
+attribution: "AKS documentation © Microsoft, CC BY 4.0 (MicrosoftDocs/azure-aks-docs). AGIC documentation © Microsoft, MIT. cloud-provider-azure annotations © The Kubernetes Authors."
+source:
+  repo: MicrosoftDocs/azure-aks-docs
+  versions:
+    strategy: fixed
+    tags: [main]
+docs:
+  - format: plain-md
+    root: articles/aks
+    include:
+      - 'internal-lb.md'
+      - 'load-balancer-standard.md'
+      - 'configure-load-balancer-standard.md'
+      - 'static-ip.md'
+      - 'concepts-network-ingress.md'
+      - 'app-routing.md'
+      - 'app-routing-dns-ssl.md'
+      - 'app-routing-nginx-configuration.md'
+      - 'azure-cni-overlay.md'
+      - 'azure-disk-csi.md'
+      - 'azure-files-csi.md'
+      - 'azure-blob-csi.md'
+    url:
+      base: 'https://learn.microsoft.com/azure/aks/'
+      strip_ext: true
+      trailing_slash: false
+annotations:
+  - type: curated-yaml
+    path: annotations/aks-lb.yaml
+  - type: md-table
+    repo: Azure/application-gateway-kubernetes-ingress
+    ref: master
+    path: docs/annotations.md
+    url: https://azure.github.io/application-gateway-kubernetes-ingress/annotations/
+    columns: { key: "Annotation Key", type: "Value Type", default: "Default Value", values: "Allowed Values", since: "Supported since" }
+    applies_to: [Ingress]

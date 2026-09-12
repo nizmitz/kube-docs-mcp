@@ -1,0 +1,21 @@
+{
+  "name": "kube-docs-web",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "fmt": "prettier --write src",
+    "fmt:check": "prettier --check src"
+  },
+  "dependencies": {
+    "astro": "^7.3.2"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^1.0.0"
+  },
+  "engines": { "node": ">=22" }
+}

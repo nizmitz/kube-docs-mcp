@@ -1,0 +1,28 @@
+slug: karpenter-aws
+name: Karpenter (AWS provider)
+category: cloud
+homepage: https://karpenter.sh
+license: { code: Apache-2.0, docs: Apache-2.0 }
+attribution: "Karpenter documentation and CRDs © The Karpenter Authors / Amazon.com, Apache 2.0."
+source:
+  repo: aws/karpenter-provider-aws
+  versions:
+    strategy: latest-minors
+    count: 2
+    tag_pattern: '^v(\d+)\.(\d+)\.(\d+)$'
+schemas:
+  - type: crd-yaml
+    paths: ['pkg/apis/crds/*.yaml']
+docs:
+  - format: hugo-md
+    root: website/content/en/docs
+    include:
+      - 'reference/**/*.md'
+      - 'concepts/nodepools.md'
+      - 'concepts/nodeclasses.md'
+      - 'concepts/disruption.md'
+      - 'concepts/scheduling.md'
+    url:
+      base: 'https://karpenter.sh/v{major}.{minor}/'
+      strip_ext: true
+      index_file: _index

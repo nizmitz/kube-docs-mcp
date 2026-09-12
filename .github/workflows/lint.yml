@@ -1,0 +1,108 @@
+name: lint
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with: { enable-cache: true, working-directory: ingest }
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with: { python-version: "3.12" }
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master 2026-09
+        with: { toolchain: stable, components: "clippy, rustfmt" }
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with: { workspaces: server }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with: { node-version: "22", cache: npm, cache-dependency-path: web/package-lock.json }
+      - name: Install hadolint + actionlint
+        run: |
+          set -euo pipefail
+          sudo wget -qO /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v2.14.0/hadolint-Linux-x86_64
+          sudo chmod +x /usr/local/bin/hadolint
+          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/v1.7.7/scripts/download-actionlint.bash) 1.7.7 /usr/local/bin >/dev/null
+      - run: uv sync --frozen
+        working-directory: ingest
+      - run: npm ci
+        working-directory: web
+      - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
+        env: { PATH: "${{ github.workspace }}/ingest/.venv/bin:${{ env.PATH }}" }
+
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with: { enable-cache: true, working-directory: ingest }
+      - run: uv sync --frozen
+        working-directory: ingest
+      - run: uv run pytest --cov-fail-under=80
+        working-directory: ingest
+      - run: uv run ingest lint
+        working-directory: ingest
+      - run: uv run pip-audit --strict
+        working-directory: ingest
+
+  rust-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: dtolnay/rust-toolchain@02cb101ec7c40f2c49e1d9714d64511d8e1b74de # master 2026-09
+        with: { toolchain: stable, components: "clippy, rustfmt" }
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with: { workspaces: server }
+      - run: mkdir -p web/dist && [ -f web/dist/index.html ] || echo '<!doctype html><title>kube-docs-mcp</title>' > web/dist/index.html
+      - run: cargo fmt --check
+        working-directory: server
+      - run: cargo clippy --all-targets -- -D warnings
+        working-directory: server
+      - run: cargo test
+        working-directory: server
+      - uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with: { manifest-path: server/Cargo.toml, command: check }
+      - uses: rustsec/audit-check@69366f33c96575abad1ee0dba8212993eecbe998 # v2.0.0
+        with: { token: "${{ secrets.GITHUB_TOKEN }}", working-directory: server }
+
+  semgrep:
+    runs-on: ubuntu-latest
+    container: { image: "semgrep/semgrep:1.176.0@sha256:12672acdb0949e19f9f6a4c2b288edd0b404f268f0ca7738a2c06f372f50362e" }
+    permissions: { contents: read, security-events: write }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - run: semgrep scan --config p/rust --config p/python --config p/github-actions --config p/dockerfile --config p/secrets --config p/owasp-top-ten --config .github/semgrep --sarif --output semgrep.sarif --error --metrics=off
+      - uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        if: always()
+        with: { sarif_file: semgrep.sarif }
+
+  zizmor:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, security-events: write }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: zizmorcore/zizmor-action@cc914d7f3750a2d13d75c7f184a1060aa0e9d482 # v0.6.4
+        with: { min-severity: medium }
+
+  trivy-fs:
+    runs-on: ubuntu-latest
+    permissions: { contents: read, security-events: write }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with: { scan-type: fs, scan-ref: ., scanners: "vuln,misconfig,secret", severity: "HIGH,CRITICAL", exit-code: "1", format: sarif, output: trivy.sarif }
+      - uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        if: always()
+        with: { sarif_file: trivy.sarif }

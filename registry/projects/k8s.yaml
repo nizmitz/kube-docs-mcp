@@ -1,0 +1,42 @@
+slug: k8s
+name: Kubernetes
+category: core
+homepage: https://kubernetes.io
+license: { code: Apache-2.0, docs: CC-BY-4.0 }
+attribution: "Kubernetes documentation © The Kubernetes Authors, CC BY 4.0. API schemas © The Kubernetes Authors, Apache 2.0."
+source:
+  repo: kubernetes/kubernetes
+  versions:
+    strategy: latest-minors
+    count: 2
+    tag_pattern: '^v(\d+)\.(\d+)\.(\d+)$'
+schemas:
+  - type: openapi-v3
+    paths: ['api/openapi-spec/v3/*.json']
+docs:
+  - repo: kubernetes/website
+    ref: 'release-{major}.{minor}|main'
+    format: hugo-md
+    root: content/en/docs
+    include:
+      - 'reference/**/*.md'
+    exclude:
+      - 'reference/glossary/**'
+      - 'reference/kubernetes-api/**'      # generated API pages; schema tools cover this
+      - 'reference/issues-security/**'
+      - 'reference/_index.md'
+    url:
+      base: 'https://kubernetes.io/docs/'
+      strip_ext: true
+      index_file: _index
+annotations:
+  - type: k8s-wellknown
+    repo: kubernetes/website
+    ref: 'release-{major}.{minor}|main'
+    path: content/en/docs/reference/labels-annotations-taints/_index.md
+    url: https://kubernetes.io/docs/reference/labels-annotations-taints/
+  - type: k8s-wellknown
+    repo: kubernetes/website
+    ref: 'release-{major}.{minor}|main'
+    path: content/en/docs/reference/labels-annotations-taints/audit-annotations.md
+    url: https://kubernetes.io/docs/reference/labels-annotations-taints/audit-annotations/

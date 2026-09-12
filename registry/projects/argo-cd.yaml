@@ -1,0 +1,34 @@
+slug: argo-cd
+name: Argo CD
+category: cncf
+homepage: https://argo-cd.readthedocs.io
+license: { code: Apache-2.0, docs: Apache-2.0 }
+attribution: "Argo CD documentation and CRDs © The Argo Authors, Apache 2.0."
+source:
+  repo: argoproj/argo-cd
+  versions:
+    strategy: latest-minors
+    count: 2
+    tag_pattern: '^v(\d+)\.(\d+)\.(\d+)$'
+schemas:
+  - type: crd-yaml
+    paths: ['manifests/crds/*-crd.yaml']
+docs:
+  - ref: 'release-{major}.{minor}|master'
+    format: mkdocs-md
+    root: docs
+    include:
+      - 'operator-manual/**/*.md'
+      - 'user-guide/**/*.md'
+    exclude:
+      - 'operator-manual/upgrading/**'
+    url:
+      base: 'https://argo-cd.readthedocs.io/en/release-{major}.{minor}/'
+      strip_ext: true
+      index_file: index
+annotations:
+  - type: md-table
+    ref: 'release-{major}.{minor}|master'
+    path: docs/user-guide/annotations-and-labels.md
+    url: https://argo-cd.readthedocs.io/en/stable/user-guide/annotations-and-labels/
+    columns: { key: "Annotation key", description: "Description", values: "Possible values", applies_to: "Target resource(es)" }
