@@ -100,7 +100,9 @@ jobs:
       - working-directory: ingest
         run: |
           set -euo pipefail
-          uv run ingest merge --shards ../shards/*.sqlite --out ../index.sqlite --ingest-sha "$GITHUB_SHA" --registry-sha "$GITHUB_SHA"
+          shard_args=()
+          for f in ../shards/*.sqlite; do shard_args+=(--shards "$f"); done
+          uv run ingest merge "${shard_args[@]}" --out ../index.sqlite --ingest-sha "$GITHUB_SHA" --registry-sha "$GITHUB_SHA"
           uv run ingest manifest --index ../index.sqlite --out ../dist
           uv run ingest attribution --index ../index.sqlite > ../dist/ATTRIBUTION.md
           ls -la ../dist
