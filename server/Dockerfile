@@ -8,10 +8,15 @@ WORKDIR /src/server
 COPY server/Cargo.toml server/Cargo.lock ./
 RUN mkdir -p src ../web/dist && echo 'fn main(){}' > src/main.rs && echo '' > src/lib.rs \
     && echo '<html></html>' > ../web/dist/index.html \
-    && cargo build --release --locked && rm -rf src target/release/deps/kube_docs_mcp* target/release/kube-docs-mcp*
+    && cargo build --release --locked \
+    && rm -rf src target/release/deps/*kube_docs_mcp* target/release/kube-docs-mcp*
 COPY server/ ./
 COPY web/dist ../web/dist
-RUN cargo build --release --locked && strip target/release/kube-docs-mcp
+# Docker COPY can leave mtimes that don't advance past the cached placeholder build, which fools
+# Cargo's staleness check into reusing the empty-lib.rs object (silent stale binary). Force new
+# mtimes so the real source is always considered newer than anything cached above.
+RUN find src -exec touch {} + \
+    && cargo build --release --locked && strip target/release/kube-docs-mcp
 
 # Stage 2: CA bundle for outbound TLS (index download).
 FROM alpine:3.22 AS certs
