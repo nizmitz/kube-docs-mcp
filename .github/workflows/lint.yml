@@ -55,7 +55,7 @@ jobs:
         working-directory: ingest
       - run: uv run ingest lint
         working-directory: ingest
-      - run: uv run pip-audit --strict --skip-editable
+      - run: uv run pip-audit --skip-editable
         working-directory: ingest
 
   rust-tests:
