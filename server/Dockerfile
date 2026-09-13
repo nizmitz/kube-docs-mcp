@@ -14,7 +14,7 @@ COPY web/dist ../web/dist
 RUN cargo build --release --locked && strip target/release/kube-docs-mcp
 
 # Stage 2: CA bundle for outbound TLS (index download).
-FROM alpine:3.22 AS certs
+FROM alpine:3.24 AS certs
 # hadolint ignore=DL3018
 RUN apk add --no-cache ca-certificates=~20250619 || apk add --no-cache ca-certificates
 
