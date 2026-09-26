@@ -87,7 +87,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
       - run: semgrep scan --config p/rust --config p/python --config p/github-actions --config p/dockerfile --config p/secrets --config p/owasp-top-ten --config .github/semgrep --sarif --output semgrep.sarif --error --metrics=off
-      - uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+      - uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
         if: always()
         with: { sarif_file: semgrep.sarif }
 
@@ -118,6 +118,6 @@ jobs:
           # Test fixtures are deliberately minimal/incomplete YAML snippets used to exercise the
           # markdown drivers, not real deployment manifests; skip them from IaC misconfig scanning.
           skip-dirs: "ingest/tests/fixtures,server/tests"
-      - uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+      - uses: github/codeql-action/upload-sarif@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4.38.1
         if: always()
         with: { sarif_file: trivy.sarif }
